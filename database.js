@@ -1,16 +1,17 @@
-const oracledb = require("oracledb");
+const oracledb = require('oracledb');
 
-// Setup Database
-const oracleConnection = oracledb.getConnection({
-  user: "hr",
-  password: "oracle",
-  connectString: "localhost/FREEPDB1",
-});
-
-// const result = oracleConnection.then((connect) => {
-//   connect.execute(`SELECT city FROM locations`).then((data) => {
-//     console.log(data.rows);
-//   });
-// });
+async function oracleConnection(){
+  try {
+    return await oracledb.getConnection({
+      user: '<user>',
+      password: '<password>',
+      connectString: '<connectString>'
+    });
+  } catch (err) {
+    console.error('Error connecting to Oracle DB:', err);
+    throw err;
+  }
+};
 
 module.exports = oracleConnection;
+

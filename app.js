@@ -6,26 +6,48 @@ const app = express();
 
 app.use(bodyParser.json());
 
-app.get("/query", (req, res) => {
+// Endpoint to run queries from request body
+app.post("/query", async (req, res) => {
   const query = req.body.query;
-  oracleConnection.then((connect) => {
-    connect.execute(query).then((data) => {
-      console.log(data.rows);
-      res.send(JSON.stringify(data.rows[0]));
-    });
-  });
+  try {
+    const connect = await oracleConnection();
+    try {
+      const result = await connect.execute(query);
+      console.log(result.rows);
+      res.send(JSON.stringify(result.rows));
+    } catch (err) {
+      console.error('Query execution error:', err);
+      res.status(500).send("Error executing query");
+    } finally {
+      await connect.close(); // Ensure the connection is closed
+    }
+  } catch (err) {
+    console.error('Database connection error:', err);
+    res.status(500).send("Database connection error");
+  }
 });
 
-app.post("/query", (req, res) => {
-  const query = req.body.query;
-  console.log(JSON.stringify(req.body));
-  oracleConnection.then((connect) => {
-    connect.execute(query).then((data) => {
-      console.log(data.rows);
-      res.send(JSON.stringify(data.rows));
-    });
-  });
+app.get("/students", async (req, res) => {
+  const query = "SELECT * FROM Students";
+  try {
+    const connect = await oracleConnection();
+    try {
+      const result = await connect.execute(query);
+      console.log("Query Result:", result.rows); // Log the result for debugging
+      res.json(result.rows); // Send JSON response
+    } catch (err) {
+      console.error('Query execution error:', err);
+      res.status(500).send("Error executing query");
+    } finally {
+      await connect.close(); // Ensure the connection is closed
+    }
+  } catch (err) {
+    console.error('Database connection error:', err);
+    res.status(500).send("Database connection error");
+  }
 });
+
+
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -33,5 +55,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(5001, () => {
-  console.log("server is running on port 5001");
+  console.log("Server is running on port 5001");
 });
